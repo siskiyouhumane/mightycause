@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mightycause page preview</title>
+<style>
+  :root { --mc: #12747c; --bg: #f3f4f6; --ink: #2a2c33; --muted: #6b7280; --warn: #b45309; --warnbg: #fff7ed; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  header { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 600; }
+  .grp { display: flex; gap: 6px; align-items: center; }
+  button, label.btn { font: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+  button:hover, label.btn:hover { background: #f8fafc; }
+  button.on { background: var(--mc); border-color: var(--mc); color: #fff; }
+  button.primary { background: var(--mc); border-color: var(--mc); color: #fff; font-weight: 600; }
+  button.small, label.btn.small { font-size: 12px; padding: 4px 8px; }
+  input[type=file] { display: none; }
+  .spacer { flex: 1; }
+  #status { font-size: 12px; color: var(--muted); }
+  main { display: grid; grid-template-columns: minmax(300px, 36%) 1fr; height: calc(100% - 52px); }
+  main.editor-hidden { grid-template-columns: 1fr; }
+  main.editor-hidden #editor { display: none; }
+  #editor { display: flex; flex-direction: column; border-right: 1px solid #e5e7eb; background: #fff; min-width: 0; }
+  /* page settings */
+  #settings { border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+  #settings summary { padding: 9px 12px; cursor: pointer; font-weight: 600; background: #f8fafc; }
+  #settings .body { padding: 10px 12px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  #settings .full { grid-column: 1 / -1; }
+  #settings label.lbl { display: block; font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
+  #settings input[type=text], #settings input[type=number] { width: 100%; font: inherit; padding: 5px 7px; border: 1px solid #cbd5e1; border-radius: 5px; }
+  #settings input[type=color] { width: 36px; height: 28px; padding: 0 2px; border: 1px solid #cbd5e1; border-radius: 5px; vertical-align: middle; background: #fff; }
+  #settings input[type=range] { width: 100%; vertical-align: middle; }
+  .asset { display: flex; gap: 10px; align-items: center; }
+  .asset .thumb { flex: none; width: 96px; height: 32px; border: 1px solid #d1d5db; border-radius: 4px; background: #e5e7eb center/cover no-repeat; }
+  .asset .thumb.sq { width: 32px; }
+  .asset .meta { font-size: 11.5px; color: var(--muted); line-height: 1.3; min-width: 0; }
+  .asset .meta b { color: var(--ink); }
+  .row2 { display: flex; gap: 6px; align-items: center; }
+  #editor textarea { flex: 1; width: 100%; border: 0; padding: 12px; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; resize: none; outline: none; white-space: pre; overflow: auto; }
+  #lint { max-height: 30%; overflow: auto; border-top: 1px solid #e5e7eb; font-size: 12.5px; }
+  #lint:empty { display: none; }
+  #lint div { padding: 7px 12px; border-bottom: 1px solid #fde7c7; background: var(--warnbg); color: var(--warn); }
+  #lint div.info { background: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+  #stage { overflow: auto; padding: 24px; display: flex; justify-content: center; align-items: flex-start; }
+  #frame { border: 1px solid #d1d5db; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.08); width: 1280px; height: 100%; max-width: 100%; transition: width .2s; }
+  #frame.tablet { width: 820px; }
+  #frame.phone { width: 390px; }
+  #help { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10; }
+  #help.open { display: flex; align-items: center; justify-content: center; }
+  #help .card { background: #fff; max-width: 600px; max-height: 90vh; overflow: auto; padding: 22px 26px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
+  #help h2 { margin: 0 0 8px; font-size: 17px; }
+  #help ol, #help ul { padding-left: 20px; }
+  #help code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mightycause page preview</h1>
+  <div class="grp">
+    <label class="btn" for="fileInput">Open HTML file…</label>
+    <input type="file" id="fileInput" accept=".html,.htm,.txt">
+    <button id="toggleEditor">Hide panel</button>
+    <button id="copyBtn" class="primary" title="Copy the story HTML so you can paste it into the editor's &lt;&gt; view">Copy HTML</button>
+  </div>
+  <div class="grp">
+    <button data-size="desktop" class="on">Desktop</button>
+    <button data-size="tablet">Tablet</button>
+    <button data-size="phone">Phone</button>
+  </div>
+  <div class="spacer"></div>
+  <span id="status"></span>
+  <button id="helpBtn">How to use</button>
+</header>
+
+<main>
+  <section id="editor">
+    <details id="settings" open>
+      <summary>Page settings (banner, logo, name, colors, goal)</summary>
+      <div class="body">
+        <div class="full">
+          <label class="lbl">Banner — cropped to 3:1 by Mightycause. 1800×600 or larger looks sharp.</label>
+          <div class="asset">
+            <div class="thumb" id="bannerThumb"></div>
+            <div class="meta" id="bannerMeta"></div>
+            <label class="btn small" for="bannerFile">Upload…</label><input type="file" id="bannerFile" accept="image/*">
+          </div>
+        </div>
+        <div class="full">
+          <label class="lbl">Logo — cropped to 1:1. 500×500 or larger.</label>
+          <div class="asset">
+            <div class="thumb sq" id="logoThumb"></div>
+            <div class="meta" id="logoMeta"></div>
+            <label class="btn small" for="logoFile">Upload…</label><input type="file" id="logoFile" accept="image/*">
+          </div>
+        </div>
+        <div class="full">
+          <label class="lbl">Organization name</label>
+          <input type="text" id="orgName">
+        </div>
+        <div>
+          <label class="lbl">Theme color (buttons, progress bar, tab)</label>
+          <div class="row2"><input type="color" id="theme"> <span id="themeHex" style="font-family:ui-monospace,monospace;font-size:12px"></span></div>
+        </div>
+        <div>
+          <label class="lbl">Banner filter: color and strength</label>
+          <div class="row2"><input type="color" id="overlayColor"> <input type="range" id="overlayStrength" min="0" max="100"> <span id="overlayPct" style="font-size:12px;width:34px"></span></div>
+        </div>
+        <div>
+          <label class="lbl">Goal ($)</label>
+          <input type="number" id="goal" min="0" step="500">
+        </div>
+        <div>
+          <label class="lbl">Raised so far ($) — to preview the bar</label>
+          <input type="number" id="raised" min="0" step="100">
+        </div>
+        <div>
+          <label class="lbl">Custom tab name (blank = no tab)</label>
+          <input type="text" id="tabName">
+        </div>
+        <div style="align-self:end">
+          <button id="resetAssets" class="small" title="Put back the banner, logo, name and colors from the live page">Reset to live page</button>
+        </div>
+      </div>
+    </details>
+    <textarea id="src" spellcheck="false" placeholder="Paste your story HTML here, or use “Open HTML file…”."></textarea>
+    <div id="lint"></div>
+  </section>
+  <section id="stage">
+    <iframe id="frame" title="Preview"></iframe>
+  </section>
+</main>
+
+<div id="help">
+  <div class="card">
+    <h2>How this works</h2>
+    <p>This shows what your page will look like on northstategives.org, using the site's real stylesheets and layout. Nothing here touches the live page.</p>
+    <ol>
+      <li><b>Story</b> — paste HTML into the text box, or click <b>Open HTML file…</b>. The preview updates as you type. When it's right, click <b>Copy HTML</b>, open your page on northstategives.org, click the <code>&lt;&gt;</code> (code view) button in the editor, replace everything, and save.</li>
+      <li><b>Banner, logo, name, colors, goal</b> — change them under <b>Page settings</b>. These are <i>not</i> part of the story HTML: on Mightycause you set them in the page's settings and upload the images there. The preview crops images the same way Mightycause does (banner 3:1, logo 1:1) so you can see what will be cut off.</li>
+      <li>Use <b>Desktop / Tablet / Phone</b>. Most Giving Tuesday visitors are on phones.</li>
+      <li>Warnings under the text box flag things the Mightycause editor will strip or that will look wrong on phones.</li>
+    </ol>
+    <p>Everything you change is remembered in this browser. <b>Reset to live page</b> puts back the current live banner, logo, name and colors. The Mightycause editor may still remove a few things (it has its own cleanup rules), so look at the live page once after saving.</p>
+    <p style="text-align:right;margin:0"><button id="helpClose" class="primary">Got it</button></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ---- Live page assets and settings, captured from northstategives.org/organization/S-H-S on 2026-10-29.
+  var LIVE = {
+    banner: 'https://imagecdn.mightycause.com/5e7cf428-c894-4f2e-900f-b4f94a066fad/-/preview/-/format/webp/-/progressive/yes/-/stretch/off/-/preview/',
+    logo: 'https://imagecdn.mightycause.com/64383173-4aa7-4473-8d74-1e1a5edb693e/-/preview/-/format/webp/-/progressive/yes/-/stretch/off/-/preview/',
+    navLogo: 'https://imagecdn.mightycause.com/3aedd117-6a58-4b4d-9506-738845f54fc8/-/crop/1000x500/0,191/-/preview/',
+    orgName: 'SISKIYOU HUMANE SOCIETY',
+    theme: '#12747c',
+    overlayColor: '#000000',
+    overlayStrength: 25,
+    goal: 60000,
+    raised: 0,
+    tabName: 'Print Media'
+  };
+  var REMOTE_CSS = [
+    'https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap',
+    'https://static-prod.mightycause.com/mc-client/froala_style.min.css',
+    'https://static-prod.mightycause.com/mc-client/lazy-bootstrap.css',
+    'https://static-prod.mightycause.com/mc-client/custom-vendor.css',
+    'https://static-prod.mightycause.com/mc-client/styles-O4IXJW46.css'
+  ];
+  // Layout rules copied from the live page's component styles, plus fallbacks for the Bootstrap/Froala pieces.
+  var FRAME_CSS = [
+    'body{margin:0;background:#fff;color:#2a2c33;font-family:"Lexend Deca",sans-serif;font-size:16px;line-height:1.6}',
+    '.container{max-width:1140px;margin:0 auto;padding:0 15px}.row{display:flex;flex-wrap:wrap;margin:0 -15px}.col-12{flex:0 0 100%;max-width:100%;padding:0 15px}',
+    '.text-center{text-align:center}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-5{margin-bottom:3rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:1rem}',
+    /* banner + logo: from .banner[_ngcontent] rules on the live page */
+    '.banner{position:relative;width:100%;margin-bottom:4rem;background:#e5e7eb}.banner::before{content:"";display:block;padding-top:33.3333%}',
+    '.banner .background-image{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;background-position:center center}',
+    '.banner .overlay{position:absolute;inset:0}',
+    '.banner .logo{width:15vw;height:15vw;margin:0 auto;position:absolute;left:0;right:0;bottom:-4rem}',
+    '.banner .logo .image{display:block;width:100%;height:100%;border-radius:8px;background:transparent center/cover no-repeat}',
+    '@media (max-width:767.98px){.banner{margin-bottom:6rem}.banner .logo{width:150px;height:150px;bottom:-6rem}}',
+    /* site nav over the banner: from .navbar and .gradient.light on the live page */
+    '.navbar{position:absolute;left:0;right:0;top:0;height:60px;z-index:1000;padding:.5rem .5rem 1rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.45) 40%,rgba(0,0,0,.2) 75%,rgba(0,0,0,0));color:#fff;font-size:15px;font-weight:500}',
+    '.navbar .l,.navbar .r{display:flex;align-items:center;gap:22px}.navbar img{height:38px;display:block;margin-right:6px}.navbar span{white-space:nowrap}.navbar .caret{font-size:11px;margin-left:4px}',
+    '@media (max-width:767.98px){.navbar .l span{display:none}.navbar .r span{display:none}.navbar .r::after{content:"\\2630";font-size:22px}}',
+    /* header, buttons, goal: from the live page */
+    'h1.org-name{font-size:28px;font-weight:600;line-height:1.2;margin:.5rem 0 .25rem;text-align:center;color:#2a2c33}',
+    '.btn-row{display:flex;flex-direction:column;align-items:center;gap:.5rem;margin:1rem 0 0}@media (min-width:768px){.btn-row{flex-direction:row;justify-content:center;gap:1rem}}',
+    '.pill{display:inline-flex;align-items:center;justify-content:center;height:64px;padding:0 16px;border-radius:32px;font-size:26px;font-weight:500;font-family:"Lexend Deca",sans-serif;min-width:200px;text-decoration:none;position:relative}',
+    '.pill.donate{background:var(--mc);color:#fff}.pill.fundraise{background:#fff;color:var(--mc);border:1px solid var(--mc)}',
+    '.sticker{position:absolute;top:-10px;right:-10px;background:#f59e0b;color:#fff;font-size:11px;font-weight:600;border-radius:999px;padding:3px 8px;transform:rotate(8deg)}',
+    '.share{display:block;text-align:center;color:var(--mc);font-size:16px;margin:.75rem 0 0;text-decoration:none}',
+    '.metrics{margin:1.5rem 0 3rem}.metrics .inner{max-width:570px;margin:0 auto;padding:0 15px}',
+    '.pbar{height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--mc)}',
+    '.metrics .nums{display:flex;justify-content:space-between;margin-top:.25rem;font-size:14px;color:#2a2c33}',
+    '.tabs{display:flex;border-bottom:1px solid #e5e7eb;margin:0 0 1rem}.tabs span{flex:1;text-align:center;padding:12px 0;font-size:14px;font-weight:500;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px}.tabs span.on{color:var(--mc);border-color:var(--mc)}',
+    /* story */
+    '.fr-view{padding:20px;color:#414141;font-size:16px;line-height:1.6;word-wrap:break-word}',
+    '.fr-view p{margin:0 0 10px}.fr-view img{max-width:100%;height:auto}.fr-view img.fr-dii{display:inline-block;vertical-align:bottom;margin:5px}',
+    '.fr-view table{border-collapse:collapse;max-width:100%}.fr-view td{vertical-align:top;padding:8px}.fr-view h1,.fr-view h2,.fr-view h3{line-height:1.25;margin:16px 0 8px}.fr-view ul,.fr-view ol{padding-left:24px}',
+    '.sim-after{margin:30px 0 0;padding:18px 20px;border-top:1px solid #e5e7eb;color:#9ca3af;font-size:12px}'
+  ].join('\n');
+
+  var S = {};           // current settings
+  var KEY = 'mc-preview-v2';
+  function load() {
+    var saved = null; try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    S = Object.assign({}, LIVE, { bannerLabel: 'Live banner', logoLabel: 'Live logo', story: '' }, saved || {});
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { status.textContent = 'Could not save draft (image too large for browser storage).'; } }
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function money(n) { return '$' + Math.round(+n || 0).toLocaleString('en-US'); }
+
+  function docFor() {
+    var links = REMOTE_CSS.map(function (u) { return '<link rel="stylesheet" href="' + u + '">'; }).join('');
+    var pct = S.goal > 0 ? Math.min(100, Math.round(100 * (+S.raised || 0) / S.goal)) : 0;
+    var tabs = '<div class="tabs"><span class="on">About</span>' + (S.tabName ? '<span>' + esc(S.tabName) + '</span>' : '') + '</div>';
+    return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + links +
+      '<style>' + FRAME_CSS + '</style></head><body style="--mc:' + esc(S.theme) + '">' +
+      '<nav class="navbar"><div class="l"><img src="' + esc(S.navLogo) + '" alt="North State Giving Tuesday"><span>Home</span><span>About<span class="caret">&#9660;</span></span><span>Resources<span class="caret">&#9660;</span></span></div><div class="r"><span>&#128269;&#xFE0E; Search</span><span>&#9679; Log in</span></div></nav>' +
+      '<div class="banner"><div class="background-image" style="background-image:url(&quot;' + esc(S.banner) + '&quot;)"></div>' +
+      '<div class="overlay" style="background:' + esc(S.overlayColor) + ';opacity:' + (S.overlayStrength / 100) + '"></div>' +
+      '<div class="logo"><span class="image" role="img" aria-label="logo" style="background-image:url(&quot;' + esc(S.logo) + '&quot;)"></span></div></div>' +
+      '<div class="container"><h1 class="org-name">' + esc(S.orgName) + '</h1>' +
+      '<div class="btn-row"><span class="pill donate">Donate<span class="sticker">Matched!</span></span><span class="pill fundraise">Fundraise</span></div>' +
+      '<a class="share" href="#">Share this organization</a>' +
+      '<div class="metrics"><div class="inner"><div class="pbar"><i style="width:' + pct + '%"></i></div><div class="nums"><span>' + pct + '% complete</span><span>' + money(S.goal) + ' Goal</span></div></div></div>' +
+      tabs +
+      '<div class="row"><div class="col-12 mb-5"><div class="fr-box fr-basic fr-top"><div class="fr-wrapper" dir="auto"><div class="fr-element fr-view">' + S.story + '</div></div></div></div></div>' +
+      '<div class="sim-after">Below the story on the real page: Giving Activity, media gallery and Organization Data, all drawn by Mightycause. The "Matched!" sticker appears on the Donate button while a matching grant is active.</div></div>' +
+      '</body></html>';
+  }
+
+  // ---- Lint for the story HTML
+  var RULES = [
+    [/<script[\s>]/i, 'Contains a <script> tag — the editor removes scripts.'],
+    [/<style[\s>]/i, 'Contains a <style> tag — the editor removes stylesheets; use inline style="…" on elements instead.'],
+    [/<iframe[\s>]/i, 'Contains an <iframe> — the editor removes it. For video, paste a YouTube or Vimeo link using the editor\'s video button.'],
+    [/<(form|input|button|select|textarea)[\s>]/i, 'Contains form elements — the editor removes them.'],
+    [/\son[a-z]+\s*=/i, 'Contains an on… event attribute — the editor removes it.'],
+    [/javascript:/i, 'Contains a javascript: link — the editor removes it.'],
+    [/class="(?!fr-)[^"]*"/i, 'Uses a custom class — the editor strips classes other than its own (fr-…). Use inline styles.'],
+    [/<link[\s>]/i, 'Contains a <link> tag — the editor removes it.']
+  ];
+  function lint(html) {
+    var out = [];
+    RULES.forEach(function (r) { if (r[0].test(html)) out.push(['warn', r[1]]); });
+    var m, re = /style="[^"]*\bwidth\s*:\s*(\d+)px/gi;
+    while ((m = re.exec(html))) { if (+m[1] > 600) { out.push(['warn', 'A fixed width of ' + m[1] + 'px will overflow on phones. Use width:100% or max-width:100%.']); break; } }
+    var n = (html.match(/<img\b(?![^>]*\balt=)[^>]*>/gi) || []).length;
+    if (n) out.push(['info', n + ' image' + (n > 1 ? 's' : '') + ' without alt text. Add alt="…" describing the photo (screen readers and SEO).']);
+    if (/<img[^>]+src="(?!https:\/\/imagecdn\.mightycause\.com)[^"]+"/i.test(html)) out.push(['info', 'An image is hosted outside imagecdn.mightycause.com. Upload it through the editor\'s image button so it isn\'t lost if the other site changes.']);
+    if (/(<br\s*\/?>\s*){3,}/i.test(html)) out.push(['info', 'Runs of three or more <br> — use separate paragraphs for spacing; it holds up better on phones.']);
+    if (/<div>\s*<div>\s*<div>/i.test(html)) out.push(['info', 'Nested empty <div>s — leftover cruft from a paste; safe to remove.']);
+    if (/<table/i.test(html)) out.push(['info', 'Uses a <table> for layout — check the Phone view; tables don\'t reflow.']);
+    return out;
+  }
+
+  // ---- Image upload: center-crop to Mightycause's preset and downscale so it fits in browser storage.
+  function cropTo(file, ratio, maxW, cb) {
+    var img = new Image();
+    img.onload = function () {
+      var w = img.naturalWidth, h = img.naturalHeight, cw = w, ch = Math.round(w / ratio);
+      if (ch > h) { ch = h; cw = Math.round(h * ratio); }
+      var sx = Math.round((w - cw) / 2), sy = Math.round((h - ch) / 2);
+      var scale = Math.min(1, maxW / cw), ow = Math.round(cw * scale), oh = Math.round(ch * scale);
+      var c = document.createElement('canvas'); c.width = ow; c.height = oh;
+      c.getContext('2d').drawImage(img, sx, sy, cw, ch, 0, 0, ow, oh);
+      URL.revokeObjectURL(img.src);
+      cb(c.toDataURL('image/jpeg', 0.85), w, h, cw, ch);
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  // ---- Wire up
+  var $ = function (id) { return document.getElementById(id); };
+  var src = $('src'), frame = $('frame'), lintEl = $('lint'), status = $('status');
+  var t;
+  function render() {
+    S.story = src.value;
+    frame.srcdoc = docFor();
+    lintEl.innerHTML = '';
+    lint(S.story).forEach(function (w) { var d = document.createElement('div'); d.className = w[0]; d.textContent = w[1]; lintEl.appendChild(d); });
+    save();
+    status.textContent = S.story.length ? S.story.length.toLocaleString() + ' characters' : '';
+  }
+  function fillSettings() {
+    $('bannerThumb').style.backgroundImage = 'url("' + S.banner + '")'; $('bannerMeta').innerHTML = '<b>' + esc(S.bannerLabel) + '</b>';
+    $('logoThumb').style.backgroundImage = 'url("' + S.logo + '")'; $('logoMeta').innerHTML = '<b>' + esc(S.logoLabel) + '</b>';
+    $('orgName').value = S.orgName; $('theme').value = S.theme; $('themeHex').textContent = S.theme;
+    $('overlayColor').value = S.overlayColor; $('overlayStrength').value = S.overlayStrength; $('overlayPct').textContent = S.overlayStrength + '%';
+    $('goal').value = S.goal; $('raised').value = S.raised; $('tabName').value = S.tabName;
+  }
+  function bind(id, key, transform) {
+    $(id).addEventListener('input', function () { S[key] = transform ? transform(this.value) : this.value; if (id === 'theme') $('themeHex').textContent = S.theme; if (id === 'overlayStrength') $('overlayPct').textContent = S.overlayStrength + '%'; clearTimeout(t); t = setTimeout(render, 80); });
+  }
+  bind('orgName', 'orgName'); bind('theme', 'theme'); bind('overlayColor', 'overlayColor');
+  bind('overlayStrength', 'overlayStrength', Number); bind('goal', 'goal', Number); bind('raised', 'raised', Number); bind('tabName', 'tabName');
+  $('bannerFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    cropTo(f, 3, 1800, function (url, w, h, cw, ch) {
+      S.banner = url; S.bannerLabel = f.name + ' — ' + w + '×' + h + (cw !== w || ch !== h ? ', shown cropped to ' + cw + '×' + ch : '') + (w < 1200 ? ' (small; may look soft)' : '');
+      fillSettings(); render();
+    });
+  });
+  $('logoFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    cropTo(f, 1, 600, function (url, w, h, cw, ch) {
+      S.logo = url; S.logoLabel = f.name + ' — ' + w + '×' + h + (cw !== w || ch !== h ? ', shown cropped to ' + cw + '×' + ch : '') + (w < 400 ? ' (small; may look soft)' : '');
+      fillSettings(); render();
+    });
+  });
+  $('resetAssets').addEventListener('click', function () {
+    var story = S.story; S = Object.assign({}, LIVE, { bannerLabel: 'Live banner', logoLabel: 'Live logo', story: story }); fillSettings(); render(); status.textContent = 'Page settings reset to the live page.';
+  });
+  src.addEventListener('input', function () { clearTimeout(t); t = setTimeout(render, 150); });
+  $('fileInput').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { src.value = r.result; render(); status.textContent = 'Loaded ' + f.name; }; r.readAsText(f);
+  });
+  $('toggleEditor').addEventListener('click', function () {
+    var m = document.querySelector('main'); m.classList.toggle('editor-hidden');
+    this.textContent = m.classList.contains('editor-hidden') ? 'Show panel' : 'Hide panel';
+  });
+  $('copyBtn').addEventListener('click', function () {
+    navigator.clipboard.writeText(src.value).then(function () { status.textContent = 'Copied — paste into the <> code view on Mightycause.'; },
+      function () { src.select(); document.execCommand('copy'); status.textContent = 'Copied.'; });
+  });
+  document.querySelectorAll('[data-size]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-size]').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on'); frame.className = b.dataset.size === 'desktop' ? '' : b.dataset.size;
+    });
+  });
+  var help = $('help');
+  $('helpBtn').addEventListener('click', function () { help.classList.add('open'); });
+  $('helpClose').addEventListener('click', function () { help.classList.remove('open'); });
+  help.addEventListener('click', function (e) { if (e.target === help) help.classList.remove('open'); });
+
+  // ---- Startup: ?file=name.html when served over http, else the saved draft.
+  load(); fillSettings();
+  var q = new URLSearchParams(location.search).get('file');
+  if (q && location.protocol !== 'file:') {
+    fetch(q).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (txt) { src.value = txt; render(); status.textContent = 'Loaded ' + q; })
+      .catch(function () { status.textContent = 'Could not load ' + q; src.value = S.story; render(); });
+  } else {
+    src.value = S.story || '';
+    if (S.story) status.textContent = 'Restored your last draft';
+    render();
+  }
+})();
+</script>
+</body>
+</html>
