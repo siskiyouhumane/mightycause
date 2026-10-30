@@ -120,6 +120,9 @@
           <input type="text" id="tabName">
         </div>
         <div style="align-self:end">
+          <label class="lbl" style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="matchActive"> Matching grant active (shows Mightycause's sticker on Donate — real look may differ)</label>
+        </div>
+        <div style="align-self:end">
           <button id="resetAssets" class="small" title="Put back the banner, logo, name and colors from the live page">Reset to live page</button>
         </div>
       </div>
@@ -160,7 +163,8 @@
     overlayStrength: 25,
     goal: 60000,
     raised: 0,
-    tabName: 'Print Media'
+    tabName: 'Print Media',
+    matchActive: false
   };
   var REMOTE_CSS = [
     'https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap',
@@ -225,12 +229,12 @@
       '<div class="overlay" style="background:' + esc(S.overlayColor) + ';opacity:' + (S.overlayStrength / 100) + '"></div>' +
       '<div class="logo"><span class="image" role="img" aria-label="logo" style="background-image:url(&quot;' + esc(S.logo) + '&quot;)"></span></div></div>' +
       '<div class="container"><h1 class="org-name">' + esc(S.orgName) + '</h1>' +
-      '<div class="btn-row"><span class="pill donate">Donate<span class="sticker">Matched!</span></span><span class="pill fundraise">Fundraise</span></div>' +
+      '<div class="btn-row"><span class="pill donate">Donate' + (S.matchActive ? '<span class="sticker">Matched!</span>' : '') + '</span><span class="pill fundraise">Fundraise</span></div>' +
       '<a class="share" href="#">Share this organization</a>' +
       '<div class="metrics"><div class="inner"><div class="pbar"><i style="width:' + pct + '%"></i></div><div class="nums"><span>' + pct + '% complete</span><span>' + money(S.goal) + ' Goal</span></div></div></div>' +
       tabs +
       '<div class="row"><div class="col-12 mb-5"><div class="fr-box fr-basic fr-top"><div class="fr-wrapper" dir="auto"><div class="fr-element fr-view">' + S.story + '</div></div></div></div></div>' +
-      '<div class="sim-after">Below the story on the real page: Giving Activity, media gallery and Organization Data, all drawn by Mightycause. The "Matched!" sticker appears on the Donate button while a matching grant is active.</div></div>' +
+      '<div class="sim-after">Below the story on the real page: Giving Activity, media gallery and Organization Data, all drawn by Mightycause. A matching-grant sticker appears on the Donate button only when a match is configured in the page settings on Mightycause.</div></div>' +
       '</body></html>';
   }
 
@@ -292,13 +296,14 @@
     $('logoThumb').style.backgroundImage = 'url("' + S.logo + '")'; $('logoMeta').innerHTML = '<b>' + esc(S.logoLabel) + '</b>';
     $('orgName').value = S.orgName; $('theme').value = S.theme; $('themeHex').textContent = S.theme;
     $('overlayColor').value = S.overlayColor; $('overlayStrength').value = S.overlayStrength; $('overlayPct').textContent = S.overlayStrength + '%';
-    $('goal').value = S.goal; $('raised').value = S.raised; $('tabName').value = S.tabName;
+    $('goal').value = S.goal; $('raised').value = S.raised; $('tabName').value = S.tabName; $('matchActive').checked = !!S.matchActive;
   }
   function bind(id, key, transform) {
     $(id).addEventListener('input', function () { S[key] = transform ? transform(this.value) : this.value; if (id === 'theme') $('themeHex').textContent = S.theme; if (id === 'overlayStrength') $('overlayPct').textContent = S.overlayStrength + '%'; clearTimeout(t); t = setTimeout(render, 80); });
   }
   bind('orgName', 'orgName'); bind('theme', 'theme'); bind('overlayColor', 'overlayColor');
   bind('overlayStrength', 'overlayStrength', Number); bind('goal', 'goal', Number); bind('raised', 'raised', Number); bind('tabName', 'tabName');
+  $('matchActive').addEventListener('change', function () { S.matchActive = this.checked; render(); });
   $('bannerFile').addEventListener('change', function (e) {
     var f = e.target.files[0]; if (!f) return;
     cropTo(f, 3, 1800, function (url, w, h, cw, ch) {
