@@ -8,6 +8,7 @@ Each file is the un-cropped original from `https://imagecdn.mightycause.com/<uui
 |---|---|---|---|---|
 | banner.png | 3456×1152 (transparent) | 4,394,783 | Page banner (background_image) | 5e7cf428-c894-4f2e-900f-b4f94a066fad |
 | logo.png | 716×716 (transparent) | 57,030 | Page logo (cover_image); displayed transparent over the banner | 64383173-4aa7-4473-8d74-1e1a5edb693e |
+| logo-padded.png | 716×716 (transparent) | 77,528 | Not on the live page. Derived from logo.png (2026-11-01): artwork trimmed and re-centered with a ~10% transparent margin on every side, for use on white or colored backgrounds where the edge-to-edge original looks cramped | — |
 | social-share-og-image.png | 3859×2847 (transparent) | 17,468,907 | og:image — the picture shown when the page is shared on Facebook, Slack, etc. | ee6518ff-f499-4238-8891-8adbacb68d7a |
 | story-1-hero.png | 4668×1356 (transparent) | 9,235,463 | About tab story, top image | bc44ba19-b088-46a4-85e0-93cba3390758 |
 | story-2.jpg | 600×800 | 42,720 | About tab story, 3-image row (left) | b58c5d6e-bbdd-4072-84a4-647ba7222fe1 |
